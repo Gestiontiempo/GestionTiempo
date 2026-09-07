@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusFlow | Gestión de Tiempo Inteligente</title>
+    
+    <!-- Alpine JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Font Awesome (Iconos) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* RESET & BASE STYLES */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        [x-cloak] { display: none !important; }
+
+        /* NAVEGACIÓN */
+        nav {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-container {
+            max-width: 1024px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background-color: #4f46e5;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+        }
+
+        .brand-title {
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.025em;
+            color: #1e1b4b;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-nav {
+            background: none;
+            border: none;
+            font-size: 0.875rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .btn-nav:hover { color: #1e293b; }
+        .btn-nav.active { color: #4f46e5; font-weight: 600; }
+
+        .btn-proc {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-proc:hover { background-color: #e9d5ff; }
+
+        /* LAYOUT PRINCIPAL */
+        main {
+            max-width: 1024px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 6rem 1rem;
+        }
+
+        /* HEADER BANNER */
+        .banner {
+            margin-bottom: 2rem;
+            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 50%, #9333ea 100%);
+            border-radius: 1.5rem;
+            color: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .banner h1 span { color: #fde047; font-weight: 900; }
+
+        .banner p {
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .banner p strong { color: #fde047; text-decoration: underline; }
+
+        .banner-bg-icon {
+            position: absolute;
+            right: -1.5rem;
+            bottom: -2.5rem;
+            font-size: 8rem;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        /* TAREAS - PLACEHOLDER VACÍO */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 1rem;
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            border: 2px dashed #e2e8f0;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #eef2ff;
+            color: #6366f1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem auto;
+            font-size: 2rem;
+        }
+
+        .empty-state h2 { font-size: 1.25rem; font-weight: 700; color: #334155; }
+        .empty-state p { font-size: 0.875rem; color: #64748b; margin: 0.25rem 0 1.5rem 0; }
+
+        /* GRID DE TAREAS */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-title { font-size: 1.125rem; font-weight: 700; color: #1e293b; }
+
+        .btn-add {
+            background-color: #eef2ff;
+            color: #4f46e5;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-add:hover { background-color: #e0e7ff; }
+
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .tasks-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .task-card {
+            background-color: #ffffff;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: box-shadow 0.2s;
+        }
+
+        .task-card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .task-card.completed { opacity: 0.6; background-color: #f8fafc; }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .badge-priority {
+            font-size: 0.625rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 800;
+            padding: 0.25rem 0.625rem;
+            border-radius: 0.375rem;
+        }
+
+        .prio-alta { background-color: #ffe4e6; color: #be123c; }
+        .prio-media { background-color: #fef3c7; color: #b45309; }
+        .prio-baja { background-color: #d1fae5; color: #047857; }
+
+        .task-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+        .btn-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .btn-play { color: #4f46e5; font-size: 1.5rem; }
+        .btn-play:hover { color: #3730a3; }
+        .btn-delete { color: #cbd5e1; font-size: 0.875rem; }
+        .btn-delete:hover { color: #ef4444; }
+
+        .task-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-title.line-through { text-decoration: line-through; color: #94a3b8; }
+
+        .task-details {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .task-details p {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.375rem;
+        }
+
+        .task-details i { width: 1rem; color: #94a3b8; }
+
+        .task-recommendation {
+            background-color: rgba(238, 242, 255, 0.6);
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(224, 231, 255, 0.5);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #3730a3;
+            margin-bottom: 1rem;
+        }
+
+        .task-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .status-tag {
+            font-weight: 700;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.375rem;
+        }
+
+        .status-completed { background-color: #ecfdf5; color: #059669; }
+        .status-pending { background-color: #fffbeb; color: #d97706; }
+
+        /* VISTA ESTADÍSTICAS */
+        .stats-card {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 640px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .stat-box {
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border: 1px solid;
+        }
+
+        .stat-box.success { background-color: rgba(238, 242, 255, 0.6); border-color: #e0e7ff; }
+        .stat-box.danger { background-color: rgba(255, 241, 242, 0.6); border-color: #ffe4e6; }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-number { font-size: 2.25rem; font-weight: 900; }
+        .stat-box.success .stat-number { color: #4f46e5; }
+        .stat-box.danger .stat-number { color: #e11d48; }
+
+        .history-list { font-size: 0.875rem; }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 0.75rem;
+        }
+
+        .time-badge {
+            background-color: #eef2ff;
+            color: #4f46e5;
+            padding: 0.25rem 0.625rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        /* MODALES */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            width: 100%;
+            max-width: 28rem;
+            padding: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid #f1f5f9;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e1b4b;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group { margin-bottom: 1rem; }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-control {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            background-color: #f8fafc;
+            font-size: 0.875rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            background-color: #ffffff;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            padding-top: 1rem;
+        }
+
+        .btn-modal {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-cancel { background-color: transparent; color: #64748b; }
+        .btn-cancel:hover { background-color: #f1f5f9; }
+        .btn-primary {
+            background-color: #4f46e5;
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+        }
+        .btn-primary:hover { background-color: #4338ca; }
+
+        /* MODO ENFOQUE (OVERLAY) */
+        .focus-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background-color: #090d16;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .focus-box { width: 100%; max-width: 28rem; }
+
+        .timer-display {
+            font-size: 4rem;
+            font-weight: 900;
+            font-family: monospace;
+            letter-spacing: -0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .focus-subtitle {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #a5b4fc;
+            margin-bottom: 2rem;
+        }
+
+        .focus-card {
+            background-color: rgba(30, 27, 75, 0.6);
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(67, 56, 202, 0.5);
+            backdrop-filter: blur(12px);
+            margin-bottom: 2rem;
+        }
+
+        .focus-textarea {
+            width: 100%;
+            background-color: rgba(15, 23, 42, 0.8);
+            border: 1px solid #4338ca;
+            border-radius: 0.75rem;
+            padding: 0.875rem;
+            font-size: 0.875rem;
+            color: #ffffff;
+            outline: none;
+            height: 6rem;
+            resize: none;
+            margin-bottom: 1rem;
+        }
+
+        .focus-textarea:focus { border-color: #818cf8; }
+
+        .btn-complete {
+            background-color: #ffffff;
+            color: #1e1b4b;
+            flex: 2;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-complete:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* DIAGNÓSTICO RESULTADO */
+        .diag-result {
+            background-color: #f3e8ff;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border-left: 4px solid #9333ea;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body x-data="focusApp()" x-init="init()">
+
+    <!-- NAVEGACIÓN -->
+    <nav>
+        <div class="nav-container">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <span class="brand-title">FocusFlow</span>
+            </div>
+            <div class="nav-actions">
+                <button @click="view = 'tasks'" :class="{ 'active': view === 'tasks' }" class="btn-nav">
+                    Tareas
+                </button>
+                <button @click="view = 'stats'" :class="{ 'active': view === 'stats' }" class="btn-nav">
+                    Progreso
+                </button>
+                <button @click="openDiagnosis()" class="btn-proc">
+                    <i class="fas fa-brain"></i>
+                    ¿Procrastinando?
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- HEADER MOTIVACIONAL -->
+        <div class="banner">
+            <div style="position: relative; z-index: 10;">
+                <h1>¡Hola! Tienes <span x-text="tasks.filter(t => !t.completed).length"></span> tareas pendientes</h1>
+                <p>Has ganado <strong x-text="timeWon"></strong> minutos de tiempo libre hoy. ✨</p>
+            </div>
+            <i class="fas fa-rocket banner-bg-icon"></i>
+        </div>
+
+        <!-- VISTA DE TAREAS -->
+        <template x-if="view === 'tasks'">
+            <div>
+                <!-- Estado vacío -->
+                <div x-show="tasks.length === 0" class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <h2>Tu lista está impecable</h2>
+                    <p>¿Qué tal si empezamos creando tu primera tarea del día?</p>
+                    <button @click="showModal = true" class="btn-add" style="background-color: #4f46e5; color: #fff;">
+                        + Crear mi primera tarea
+                    </button>
+                </div>
+
+                <!-- Lista de Tareas -->
+                <div x-show="tasks.length > 0">
+                    <div class="section-header">
+                        <h2 class="section-title">Cronograma Sugerido</h2>
+                        <button @click="showModal = true" class="btn-add">+ Nueva Tarea</button>
+                    </div>
+                    
+                    <div class="tasks-grid">
+                        <template x-for="task in sortedTasks()" :key="task.id">
+                            <div class="task-card" :class="{ 'completed': task.completed }">
+                                <div>
+                                    <div class="task-header">
+                                        <span class="badge-priority" :class="priorityColor(task.priority)" x-text="task.priority"></span>
+                                        <div class="task-actions">
+                                            <button x-show="!task.completed" @click="startFocus(task)" class="btn-action btn-play" title="Iniciar">
+                                                <i class="fas fa-play-circle"></i>
+                                            </button>
+                                            <button @click="deleteTask(task.id)" class="btn-action btn-delete" title="Eliminar">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <h3 class="task-title" :class="{ 'line-through': task.completed }" x-text="task.name"></h3>
+                                    
+                                    <div class="task-details">
+                                        <p><i class="far fa-calendar-alt"></i> Límite: <span x-text="task.deadline || 'Sin fecha'"></span></p>
+                                        <p><i class="fas fa-map-marker-alt"></i> <span x-text="task.location || 'N/A'"></span> | <span x-text="task.type"></span></p>
+                                        <p><i class="fas fa-bolt"></i> Energía: <span x-text="task.energy"></span></p>
+                                    </div>
+                                    
+                                    <div class="task-recommendation" x-text="getRecommendation(task)"></div>
+                                </div>
+
+                                <div class="task-footer">
+                                    <span>Pomodoros: <strong x-text="task.completedSessions"></strong>/<span x-text="task.totalSessions"></span></span>
+                                    <span class="status-tag" :class="task.completed ? 'status-completed' : 'status-pending'" x-text="getStatus(task)"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- VISTA DE ESTADÍSTICAS -->
+        <template x-if="view === 'stats'">
+            <div class="stats-card">
+                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Historial de Enfoque</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-box success">
+                        <p class="stat-label">Sesiones Completadas</p>
+                        <p class="stat-number" x-text="stats.completed"></p>
+                    </div>
+                    <div class="stat-box danger">
+                        <p class="stat-label">Sesiones Interrumpidas</p>
+                        <p class="stat-number" x-text="stats.interrupted"></p>
+                    </div>
+                </div>
+
+                <h3 style="font-weight: 700; margin-bottom: 1rem;">Tareas Finalizadas</h3>
+                <div class="history-list">
+                    <template x-for="done in tasks.filter(t => t.completed)" :key="done.id">
+                        <div class="history-item">
+                            <span x-text="done.name" style="font-weight: 500;"></span>
+                            <span class="time-badge" x-text="done.totalTime + ' min'"></span>
+                        </div>
+                    </template>
+                    <div x-show="tasks.filter(t => t.completed).length === 0" style="color: #94a3b8; font-style: italic;">
+                        Aún no has completado ninguna tarea.
+                    </div>
+                </div>
+            </div>
+        </template>
+    </main>
+
+    <!-- MODAL: CREAR TAREA -->
+    <div x-show="showModal" class="modal-overlay" x-cloak>
+        <div class="modal-content" @click.away="showModal = false">
+            <h2 class="modal-title">Nueva Tarea</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Nombre de la tarea</label>
+                <input x-model="newTask.name" type="text" placeholder="Ej: Estudiar Cálculo" class="form-control">
+            </div>
+
+            <div class="grid-2 form-group">
+                <div>
+                    <label class="form-label">Tipo</label>
+                    <select x-model="newTask.type" class="form-control">
+                        <option>Virtual</option>
+                        <option>Presencial</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Duración</label>
+                    <select x-model="newTask.duration" class="form-control">
+                        <option value="short">Corta (&lt; 30m)</option>
+                        <option value="long">Larga (&gt; 30m)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-2 form-group">
+                <div>
+                    <label class="form-label">Prioridad</label>
+                    <select x-model="newTask.priority" class="form-control">
+                        <option value="baja">Baja</option>
+                        <option value="media">Media</option>
+                        <option value="alta">Alta</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Energía Ideal</label>
+                    <select x-model="newTask.energy" class="form-control">
+                        <option>Mañana</option>
+                        <option>Tarde</option>
+                        <option>Noche</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Lugar y Fecha Límite</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input x-model="newTask.location" type="text" placeholder="Casa, Univ..." class="form-control" style="width: 50%;">
+                    <input x-model="newTask.deadline" type="date" class="form-control" style="width: 50%;">
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button @click="showModal = false" class="btn-modal btn-cancel">Cancelar</button>
+                <button @click="saveTask()" class="btn-modal btn-primary">Guardar Tarea</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODO ENFOQUE -->
+    <div x-show="focusMode" class="focus-overlay" x-cloak>
+        <div class="focus-box">
+            <div class="timer-display" x-text="timerDisplay"></div>
+            <p class="focus-subtitle">Modo Enfoque Activo</p>
+            
+            <div class="focus-card">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;" x-text="activeTask?.name"></h3>
+                <p style="font-size: 0.75rem; color: #c7d2fe; margin-bottom: 1.5rem; font-style: italic;">"Mantén la concentración. Registra tu avance para terminar."</p>
+                
+                <label style="display: block; text-align: left; font-size: 0.75rem; font-weight: 700; color: #a5b4fc; margin-bottom: 0.5rem; text-transform: uppercase;">Evidencia de avance</label>
+                <textarea x-model="focusEvidence" placeholder="Escribe un pequeño resumen de lo avanzado..." class="focus-textarea"></textarea>
+                
+                <div style="display: flex; gap: 0.75rem;">
+                    <button @click="cancelFocus()" class="btn-modal btn-cancel" style="color: #a5b4fc;">Rendirse</button>
+                    <button @click="completeSession()" :disabled="focusEvidence.trim().length < 5" class="btn-complete">Completar Sesión</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DIAGNÓSTICO -->
+    <div x-show="showDiagnosis" class="modal-overlay" x-cloak>
+        <div class="modal-content" @click.away="showDiagnosis = false">
+            <div style="display: flex; justify-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: #581c87;">¿Por qué no empiezas?</h2>
+                <button @click="showDiagnosis = false" style="background: none; border: none; color: #94a3b8; cursor: pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <p style="font-size: 0.875rem; color: #475569; margin-bottom: 1rem;">Describe brevemente lo que sientes o te distrae:</p>
+            
+            <div style="position: relative; margin-bottom: 1rem;">
+                <input x-model="symptom" @keyup.enter="diagnose()" type="text" placeholder="Ej: celular, cansado, es difícil..." class="form-control" style="padding-right: 2.5rem; background-color: #faf5ff; border-color: #f3e8ff;">
+                <button @click="diagnose()" style="position: absolute; right: 0.5rem; top: 0.5rem; background-color: #9333ea; color: #fff; border: none; width: 2rem; height: 2rem; border-radius: 0.5rem; cursor: pointer;">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <div x-show="diagnosisResult" class="diag-result">
+                <h4 style="font-weight: 700; color: #581c87; margin-bottom: 0.25rem;">Diagnóstico sugerido:</h4>
+                <p style="font-size: 0.875rem; color: #334155; margin-bottom: 0.75rem;" x-text="diagnosisResult?.cause"></p>
+                <h4 style="font-weight: 700; color: #581c87; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 0.5rem;">Plan de acción:</h4>
+                <ul style="font-size: 0.875rem; color: #475569; padding-left: 1.25rem;">
+                    <template x-for="tip in diagnosisResult?.tips" :key="tip">
+                        <li x-text="tip" style="margin-bottom: 0.25rem;"></li>
+                    </template>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- LÓGICA ALPINE.JS -->
+    <script>
+        function focusApp() {
+            return {
+                view: 'tasks',
+                tasks: [],
+                showModal: false,
+                showDiagnosis: false,
+                focusMode: false,
+                symptom: '',
+                diagnosisResult: null,
+                timeWon: 0,
+                activeTask: null,
+                timerDisplay: '25:00',
+                timerInterval: null,
+                focusEvidence: '',
+                stats: { completed: 0, interrupted: 0 },
+                newTask: {
+                    name: '',
+                    type: 'Virtual',
+                    duration: 'short',
+                    priority: 'media',
+                    energy: 'Mañana',
+                    location: '',
+                    deadline: ''
+                },
+
+                init() {
+                    const saved = localStorage.getItem('focusFlowTasks');
+                    if (saved) this.tasks = JSON.parse(saved);
+                    const savedStats = localStorage.getItem('focusFlowStats');
+                    if (savedStats) {
+                        const s = JSON.parse(savedStats);
+                        this.stats = s;
+                        this.timeWon = s.completed * 5;
+                    }
+                },
+
+                saveTask() {
+                    if (!this.newTask.name.trim()) return;
+                    const task = {
+                        ...this.newTask,
+                        id: Date.now(),
+                        completed: false,
+                        completedSessions: 0,
+                        totalSessions: this.newTask.duration === 'long' ? 4 : 1,
+                        totalTime: 0
+                    };
+                    this.tasks.push(task);
+                    this.persist();
+                    this.showModal = false;
+                    this.resetNewTask();
+                },
+
+                resetNewTask() {
+                    this.newTask = { name: '', type: 'Virtual', duration: 'short', priority: 'media', energy: 'Mañana', location: '', deadline: '' };
+                },
+
+                deleteTask(id) {
+                    this.tasks = this.tasks.filter(t => t.id !== id);
+                    this.persist();
+                },
+
+                persist() {
+                    localStorage.setItem('focusFlowTasks', JSON.stringify(this.tasks));
+                    localStorage.setItem('focusFlowStats', JSON.stringify(this.stats));
+                },
+
+                sortedTasks() {
+                    return [...this.tasks].sort((a, b) => {
+                        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                        const prio = { alta: 3, media: 2, baja: 1 };
+                        return prio[b.priority] - prio[a.priority];
+                    });
+                },
+
+                getRecommendation(task) {
+                    if (task.completed) return "¡Tarea terminada exitosamente!";
+                    if (task.duration === 'short') return "💡 Sugerencia: Realízala como un 'quick win' rápido.";
+                    if (task.duration === 'long') return `🚀 Proyecto largo: Dividido en ${task.totalSessions} bloques Pomodoro.`;
+                    return "Lista para comenzar.";
+                },
+
+                getStatus(task) {
+                    if (task.completed) return "Completada";
+                    if (task.deadline) {
+                        const today = new Date().setHours(0,0,0,0);
+                        const deadline = new Date(task.deadline).setHours(0,0,0,0);
+                        if (deadline < today) return "Vencida";
+                    }
+                    if (task.priority === 'alta') return "Prioridad Alta";
+                    return "En Progreso";
+                },
+
+                priorityColor(p) {
+                    const colors = {
+                        alta: 'prio-alta',
+                        media: 'prio-media',
+                        baja: 'prio-baja'
+                    };
+                    return colors[p] || '';
+                },
+
+                openDiagnosis() {
+                    this.showDiagnosis = true;
+                    this.diagnosisResult = null;
+                    this.symptom = '';
+                },
+
+                diagnose() {
+                    const s = this.symptom.toLowerCase();
+                    if (!s.trim()) return;
+
+                    if (s.includes('celular') || s.includes('redes') || s.includes('distra') || s.includes('telefono')) {
+                        this.diagnosisResult = {
+                            cause: "Distracción digital y búsqueda involuntaria de dopamina.",
+                            tips: ["Pon tu teléfono en modo 'No Molestar' y fuera de tu vista.", "Abre únicamente la pestaña/documento donde vas a trabajar.", "Usa bloques de tiempo cortos (15-25 min)."]
+                        };
+                    } else if (s.includes('larga') || s.includes('difícil') || s.includes('mucho') || s.includes('compleja')) {
+                        this.diagnosisResult = {
+                            cause: "Parálisis por análisis frente a una tarea grande.",
+                            tips: ["Divide el primer paso en algo ridículamente simple.", "Comprométete a trabajar solo 5 minutos sin presión.", "Olvídate de la perfección en el primer borrador."]
+                        };
+                    } else if (s.includes('ganas') || s.includes('cansado') || s.includes('sueño') || s.includes('exhausto')) {
+                        this.diagnosisResult = {
+                            cause: "Fatiga o baja energía fisiológica.",
+                            tips: ["Toma un vaso de agua fría.", "Haz un estiramiento rápido de 2 minutos.", "Pospón tareas de alta carga cognitiva para tu pico de energía."]
+                        };
+                    } else {
+                        this.diagnosisResult = {
+                            cause: "Resistencia o fricción inicial estándar.",
+                            tips: ["Aplica la regla de los 2 minutos para arrancar.", "Deja listo tu entorno de trabajo.", "Comienza por el detalle más sencillo."]
+                        };
+                    }
+                },
+
+                startFocus(task) {
+                    this.activeTask = task;
+                    this.focusMode = true;
+                    this.focusEvidence = '';
+                    let seconds = 25 * 60;
+                    
+                    if (this.timerInterval) clearInterval(this.timerInterval);
+                    
+                    this.timerInterval = setInterval(() => {
+                        seconds--;
+                        let m = Math.floor(seconds / 60);
+                        let s = seconds % 60;
+                        this.timerDisplay = `${m}:${s < 10 ? '0'+s : s}`;
+                        if (seconds <= 0) {
+                            this.completeSession();
+                        }
+                    }, 1000);
+                },
+
+                cancelFocus() {
+                    if (confirm('¿Deseas interrumpir la sesión activa?')) {
+                        clearInterval(this.timerInterval);
+                        this.focusMode = false;
+                        this.stats.interrupted++;
+                        this.persist();
+                    }
+                },
+
+                completeSession() {
+                    clearInterval(this.timerInterval);
+                    this.focusMode = false;
+                    
+                    const task = this.tasks.find(t => t.id === this.activeTask.id);
+                    if (task) {
+                        task.completedSessions++;
+                        task.totalTime += 25;
+                        if (task.completedSessions >= task.totalSessions) {
+                            task.completed = true;
+                        }
+                    }
+                    
+                    this.stats.completed++;
+                    this.timeWon += 10;
+                    this.persist();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
