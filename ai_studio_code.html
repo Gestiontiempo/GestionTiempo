@@ -13,6 +13,8 @@
         .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
         .focus-overlay { z-index: 9999; }
         [x-cloak] { display: none !important; }
+        input, select, textarea { border: 1px solid #e2e8f0; }
+        input:focus, select:focus, textarea:focus { border-color: #4f46e5; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen" x-data="focusApp()" x-init="init()">
@@ -134,19 +136,19 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Nombre</label>
-                    <input x-model="newTask.name" type="text" placeholder="Ej: Estudiar Cálculo" class="w-full border-slate-200 rounded-xl p-3 bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <input x-model="newTask.name" type="text" placeholder="Ej: Estudiar Cálculo" class="w-full rounded-xl p-3 bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Tipo</label>
-                        <select x-model="newTask.type" class="w-full border-slate-200 rounded-xl p-3 bg-slate-50 outline-none">
+                        <select x-model="newTask.type" class="w-full rounded-xl p-3 bg-slate-50 outline-none">
                             <option>Virtual</option>
                             <option>Presencial</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Duración</label>
-                        <select x-model="newTask.duration" class="w-full border-slate-200 rounded-xl p-3 bg-slate-50 outline-none">
+                        <select x-model="newTask.duration" class="w-full rounded-xl p-3 bg-slate-50 outline-none">
                             <option value="short">Corta (< 30m)</option>
                             <option value="long">Larga (> 30m)</option>
                         </select>
@@ -155,7 +157,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Prioridad</label>
-                        <select x-model="newTask.priority" class="w-full border-slate-200 rounded-xl p-3 bg-slate-50 outline-none">
+                        <select x-model="newTask.priority" class="w-full rounded-xl p-3 bg-slate-50 outline-none">
                             <option value="baja">Baja</option>
                             <option value="media">Media</option>
                             <option value="alta">Alta</option>
@@ -163,7 +165,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Energía</label>
-                        <select x-model="newTask.energy" class="w-full border-slate-200 rounded-xl p-3 bg-slate-50 outline-none">
+                        <select x-model="newTask.energy" class="w-full rounded-xl p-3 bg-slate-50 outline-none">
                             <option>Mañana</option>
                             <option>Tarde</option>
                             <option>Noche</option>
@@ -173,8 +175,8 @@
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Lugar y Fecha Límite</label>
                     <div class="flex gap-2">
-                        <input x-model="newTask.location" type="text" placeholder="Casa, Univ..." class="w-1/2 border-slate-200 rounded-xl p-3 bg-slate-50 outline-none">
-                        <input x-model="newTask.deadline" type="date" class="w-1/2 border-slate-200 rounded-xl p-3 bg-slate-50 outline-none">
+                        <input x-model="newTask.location" type="text" placeholder="Casa, Univ..." class="w-1/2 rounded-xl p-3 bg-slate-50 outline-none">
+                        <input x-model="newTask.deadline" type="date" class="w-1/2 rounded-xl p-3 bg-slate-50 outline-none">
                     </div>
                 </div>
                 <div class="flex gap-3 pt-4">
@@ -195,7 +197,7 @@
                 <p class="text-sm opacity-80 mb-6 italic">"Tu celular está bloqueado. Solo tú puedes decidir terminar esto."</p>
                 
                 <label class="block text-left text-xs font-bold mb-2 text-indigo-300">¿QUÉ HAS AVANZADO? (EVIDENCIA)</label>
-                <textarea x-model="focusEvidence" placeholder="Escribe aquí un pequeño resumen o checklist de lo avanzado para desbloquear..." class="w-full bg-indigo-900/50 border border-indigo-600 rounded-xl p-4 text-sm outline-none focus:border-white transition h-24 mb-4"></textarea>
+                <textarea x-model="focusEvidence" placeholder="Escribe aquí un pequeño resumen o checklist de lo avanzado para desbloquear..." class="w-full bg-indigo-900/50 border border-indigo-600 rounded-xl p-4 text-sm outline-none focus:border-white transition h-24 mb-4 text-white"></textarea>
                 
                 <div class="flex gap-4">
                     <button @click="cancelFocus()" class="flex-1 py-3 text-xs text-indigo-400 font-bold">Rendirse</button>
@@ -215,7 +217,7 @@
                 <button @click="showDiagnosis = false" class="text-slate-400"><i class="fas fa-times"></i></button>
             </div>
             <p class="text-slate-600 mb-4 text-sm">Describe brevemente lo que sientes o lo que te distrae:</p>
-            <input x-model="symptom" @keyup.enter="diagnose()" type="text" placeholder="Ej: estoy mucho en el celular, es muy difícil, etc." class="w-full border-purple-100 rounded-xl p-4 bg-purple-50 focus:ring-2 focus:ring-purple-500 outline-none mb-6">
+            <input x-model="symptom" @keyup.enter="diagnose()" type="text" placeholder="Ej: estoy mucho en el celular, es muy difícil, etc." class="w-full rounded-xl p-4 bg-purple-50 focus:ring-2 focus:ring-purple-500 outline-none mb-6">
             
             <div x-show="diagnosisResult" class="bg-indigo-50 p-6 rounded-2xl border-l-4 border-indigo-500" x-transition>
                 <h4 class="font-bold text-indigo-900 mb-1">Diagnóstico sugerido:</h4>
